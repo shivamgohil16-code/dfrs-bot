@@ -1,0 +1,19 @@
+{
+  "name": "dfrs-quota-bot",
+  "version": "1.0.0",
+  "description": "Defence Fire and Rescue Service Bot - logs personnel patrol/shift quota to a Google Sheet ORBAT",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "deploy": "node deploy-commands.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.15.3",
+    "dotenv": "^16.4.5",
+    "googleapis": "^140.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

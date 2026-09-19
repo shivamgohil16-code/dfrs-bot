@@ -29,11 +29,9 @@ function getClient() {
   if (!sheetsClientPromise) {
     sheetsClientPromise = (async () => {
       let privateKey = process.env.GOOGLE_PRIVATE_KEY || '';
-      // Strip wrapping quotes if Render preserved them literally
       if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
         privateKey = privateKey.slice(1, -1);
       }
-      // Replace literal \n characters with actual newlines
       privateKey = privateKey.replace(/\\n/g, '\n');
 
       const auth = new google.auth.JWT(
@@ -53,6 +51,26 @@ function getClient() {
  * Finds the sheet row number (1-indexed, matching the actual row on the sheet)
  * for a given username. Case-insensitive, trims whitespace. Returns null if not found.
  */
+/**
+ * Retrieves and caches the numeric gid for the target tab.
+ */
+
+async function getSheetGid(sheets) {
+  if (sheetIdCache !== null) return sheetIdCache;
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const sheet = meta.data.sheets.find(s => s.properties.title === SHEET_NAME);
+  if (!sheet) {
+    throw new Error("Could not find a tab named " + SHEET_NAME + " in the spreadsheet.");
+  }
+  sheetIdCache = sheet.properties.sheetId;
+  return sheetIdCache;
+}
+
+/**
+ * Finds the sheet row number (1-indexed, matching the actual row on the sheet)
+ * for a given username. Case-insensitive, trims whitespace. Returns null if not found.
+ */
+
 async function findUserRow(username) {
   const sheets = await getClient();
   const range = SHEET_NAME + "!" + COL_USERNAME + (HEADER_ROW + 1) + ":" + COL_USERNAME;

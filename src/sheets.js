@@ -1,3 +1,4 @@
+﻿require('dotenv').config();
 const { google } = require('googleapis');
 const { secondsToHMS, hmsToSeconds } = require('./time');
 
@@ -30,7 +31,7 @@ function getClient() {
       const auth = new google.auth.JWT(
         process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
         null,
-        process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+        (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
         ['https://www.googleapis.com/auth/spreadsheets']
       );
       await auth.authorize();
@@ -45,7 +46,7 @@ async function getSheetGid(sheets) {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
   const sheet = meta.data.sheets.find((s) => s.properties.title === SHEET_NAME);
   if (!sheet) {
-    throw new Error(`Could not find a tab named "${SHEET_NAME}" in the spreadsheet.`);
+throw new Error("Could not find a tab named " + SHEET_NAME + " in the spreadsheet.");
   }
   sheetIdCache = sheet.properties.sheetId;
   return sheetIdCache;
@@ -57,7 +58,7 @@ async function getSheetGid(sheets) {
  */
 async function findUserRow(username) {
   const sheets = await getClient();
-  const range = `${SHEET_NAME}!${COL_USERNAME}${HEADER_ROW + 1}:${COL_USERNAME}`;
+  const range = SHEET_NAME + "!" + COL_USERNAME + (HEADER_ROW + 1) + ":" + COL_USERNAME;
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range,
@@ -81,7 +82,7 @@ async function findUserRow(username) {
  */
 async function getCurrentQuotaSeconds(row) {
   const sheets = await getClient();
-  const range = `${SHEET_NAME}!${COL_QUOTA}${row}`;
+  const range = SHEET_NAME + "!" + COL_QUOTA + row;
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
     range,
@@ -91,7 +92,7 @@ async function getCurrentQuotaSeconds(row) {
 }
 
 /**
- * Adds `secondsToAdd` to the existing quota for `row`, writes the new HH:MM:SS
+ * Adds secondsToAdd to the existing quota for row, writes the new HH:MM:SS
  * value back, and colours the cell green if the target is met, red otherwise.
  * Returns { previousSeconds, newSeconds, newHMS, quotaMet }.
  */
@@ -145,3 +146,4 @@ module.exports = {
   addQuotaSeconds,
   QUOTA_TARGET_SECONDS,
 };
+
